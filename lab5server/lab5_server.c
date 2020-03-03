@@ -9,9 +9,33 @@
 #include<sys/stat.h>
 #include"md5.h"
 #include <sys/types.h>
+#include <stdbool.h>
+
+
 
 #define PORT 8080 
 
+
+char* nametofile(char name[])
+{
+    FILE * f = fopen (name, "rb");
+    int length;
+    char * buffer;
+    if (f)
+    {
+        fseek (f, 0, SEEK_END);
+        length = ftell (f);
+        fseek (f, 0, SEEK_SET);
+        buffer =(char *) malloc (length);
+        if (buffer)
+        {
+            fread (buffer, 1, length, f);
+        }
+        fclose (f);
+    }
+    return buffer;
+
+}
 
 void getFileCreationTime(char *path,char lastmod[]) {
     struct stat attr;
@@ -116,6 +140,40 @@ int main(int argc, char const *argv[])
         }
         else if(strcmp(n,"4")==0)
         {
+            printf("%s\n","FileHash Verify Request");
+
+            char name[20],size[20];
+            int size1;
+            valread=read(new_socket,name,20);
+            char lastmod[50];
+            
+            //if(name)
+            //{
+	            struct stat st; /*declare stat variable*/
+
+                if(stat(name,&st)==0)
+                    sprintf(size, "%ld", st.st_size); 
+                else
+                    printf("no\n");
+                sscanf(size,"%d",&size1);
+                char hash[34]="";
+                
+                hashfn(nametofile(name),hash,size1);
+
+                //printf("%ld\n",strlen(hash));
+                // printf("filename = %s\n",name);
+                // printf("filesize = %d\n",size1);
+                // printf("md5hash = %s\n",hash);
+                getFileCreationTime(name,lastmod);
+                //printf("last mod = %s",lastmod);
+
+                send(new_socket,&size1,sizeof(size1),0);
+                send(new_socket,hash,34,0);
+                send(new_socket,lastmod,50,0);
+
+
+            //}
+            
             
         }
         else if(strcmp(n,"5")==0)
@@ -144,7 +202,7 @@ int main(int argc, char const *argv[])
                 if (fptr != NULL)
                 {
                     fputs(file, fptr);
-                    fseek(fptr, 0, SEEK_SET);
+                    //fseek(fptr, 0, SEEK_SET);
                     fclose(fptr);
                 }
                 //char* hash=(char*)malloc(sizeof(char)*34);
@@ -170,9 +228,7 @@ int main(int argc, char const *argv[])
             valread=read(new_socket,name,20);
             //if(name) //check if name exists in file and then check size 
             send(new_socket,"1",sizeof("1"),0);
-            FILE * f = fopen (name, "rb");
-            int length;
-            char * buffer;
+            
 
             struct stat st; /*declare stat variable*/
      
@@ -184,6 +240,9 @@ int main(int argc, char const *argv[])
             else
                 printf("no\n");
 
+            FILE * f = fopen (name, "rb");
+            int length;
+            char * buffer;
             if (f)
             {
                 fseek (f, 0, SEEK_END);

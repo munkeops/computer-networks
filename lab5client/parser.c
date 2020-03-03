@@ -65,6 +65,22 @@ int connection(char**a,int n,int k)
 		send(sock,a[i],20,0);
 		i++;
 	}
+	if(strcmp(a[0],"4")==0)
+	{
+		char hash[34];
+		char lastmod[50];
+		int size1;
+		valread=read(sock,&size1,sizeof(int));
+		valread=read(sock,hash,34);
+		valread=read(sock,lastmod,50);
+		printf("filename = %s\n",a[1]);
+		printf("filesize = %d\n",size1);
+		printf("md5hash = %s\n",hash);
+		printf("last mod = %s",lastmod);
+		printf("Request Completed\n");
+
+
+	}
 
 	if(strcmp(a[0],"5")==0)
 	{
