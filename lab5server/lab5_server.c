@@ -8,30 +8,18 @@
 #include<time.h>
 #include<sys/stat.h>
 #include"md5.h"
+#include <sys/types.h>
+
 #define PORT 8080 
 
-char* substr(const char *src, int m, int n)
-{
-	// get length of the destination string
-	int len = n - m;
 
-	// allocate (len + 1) chars for destination (+1 for extra null character)
-	char *dest = (char*)malloc(sizeof(char) * (len + 1));
-
-	// extracts characters between m'th and n'th index from source string
-	// and copy them into the destination string
-	for (int i = m; i < n && (*(src + i) != '\0'); i++)
-	{
-		*dest = *(src + i);
-		dest++;
-	}
-
-	// null-terminate the destination string
-	*dest = '\0';
-
-	// return the destination string
-	return dest - len;
+void getFileCreationTime(char *path,char lastmod[]) {
+    struct stat attr;
+    stat(path, &attr);
+    strcpy(lastmod,ctime(&attr.st_mtime));
+    // /printf("Last modified time: %s",ctime(&attr.st_mtime) );
 }
+
 void getIndexShort()
 {
     
@@ -165,6 +153,9 @@ int main(int argc, char const *argv[])
                 //printf("%ld\n",strlen(hash));
                 printf("md5hash = %s\n",hash);
                 //free(hash);
+                char lastmod[50];
+                getFileCreationTime(name,lastmod);
+                printf("last mod = %s",lastmod);
                 send(new_socket,"Request Completed",sizeof("Request Completed"),0);
 
             }
