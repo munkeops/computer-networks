@@ -10,11 +10,38 @@
 #include"md5.h"
 #include <sys/types.h>
 #include <stdbool.h>
+#include <dirent.h>
 
 
 
 #define PORT 8080 
+int countfiles(char *path) {
+    DIR *dir_ptr = NULL;
+    struct dirent *direntp;
+    char *npath;
+    if (!path) return 0;
+    if( (dir_ptr = opendir(path)) == NULL ) return 0;
 
+    int count=0;
+    while( (direntp = readdir(dir_ptr)))
+    {
+        if (strcmp(direntp->d_name,".")==0 ||
+            strcmp(direntp->d_name,"..")==0) continue;
+        switch (direntp->d_type) {
+            case DT_REG:
+                ++count;
+                break;
+            case DT_DIR:            
+                npath=malloc(strlen(path)+strlen(direntp->d_name)+2);
+                sprintf(npath,"%s/%s",path, direntp->d_name);
+                count += countfiles(npath);
+                free(npath);
+                break;
+        }
+    }
+    closedir(dir_ptr);
+    return count;
+}
 
 char* nametofile(char name[])
 {
@@ -132,6 +159,47 @@ int main(int argc, char const *argv[])
         else if(strcmp(n,"2")==0)
         {
             printf("%s\n","IndexGet Request");
+            int count=0;
+            DIR *d;
+            struct dirent *dir;
+            d = opendir(".");
+            if (d)
+            {
+                int filecount=countfiles(".");
+                printf("%d\n",filecount);
+                send(new_socket,&filecount,sizeof(int),0);
+                while ((dir = readdir(d)) != NULL)
+                {
+                    printf("\n%s", dir->d_name);
+                    if(count>1)
+                    {
+                        struct stat st; /*declare stat variable*/
+                        char size[20];
+                        int size1;
+                        char hash[34]="";
+                        char lastmod[50];
+
+                        if(stat(dir->d_name,&st)==0)
+                            sprintf(size, "%ld", st.st_size); 
+                        else
+                            printf("no\n");
+                        sscanf(size,"%d",&size1);
+                        hashfn(nametofile(dir->d_name),hash,size1);
+                        printf("%s\n",size);
+                        printf("%s\n",hash);
+                        getFileCreationTime(dir->d_name,lastmod);
+                        printf("last mod : %s\n",lastmod);
+                        send(new_socket,dir->d_name,20,0);
+                        send(new_socket,&size1,sizeof(size1),0);
+                        send(new_socket,hash,34,0);
+                        send(new_socket,lastmod,50,0);
+
+                    }
+                    count++;
+                }
+                closedir(d);
+            }
+                    
             
         }
         else if(strcmp(n,"3")==0)
@@ -140,7 +208,7 @@ int main(int argc, char const *argv[])
         }
         else if(strcmp(n,"4")==0)
         {
-            printf("%s\n","FileHash Verify Request");
+            printf("FileHash Verify Request\n");
 
             char name[20],size[20];
             int size1;

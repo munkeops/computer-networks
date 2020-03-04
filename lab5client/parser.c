@@ -65,6 +65,32 @@ int connection(char**a,int n,int k)
 		send(sock,a[i],20,0);
 		i++;
 	}
+	if(strcmp(a[0],"2")==0)
+	{
+		int numfiles;
+		char name[20];
+		valread=read(sock,&numfiles,4);
+		int size1;
+		char hash[34];
+		char lastmod[50];
+
+		for(i=0;i<numfiles;i++)
+		{
+
+			valread=read(sock,name,20);
+			valread=read(sock,&size1,sizeof(int));
+			valread=read(sock,hash,34);
+			valread=read(sock,lastmod,50);
+			printf("%s %d %s %s\n\n",name , size1,lastmod,hash);
+			// printf("filename = %s\n",name);
+			// printf("filesize = %d\n",size1);
+			// printf("md5hash = %s\n",hash);
+			// printf("last mod = %s",lastmod);
+		}
+			printf("Request Completed\n");
+
+	}
+	
 	if(strcmp(a[0],"4")==0)
 	{
 		char hash[34];
@@ -225,7 +251,7 @@ void getIndexRegx(char * type)
 }
 void fileHashVerify(char * name)
 {
-	printf("verifying for %s\n",name);
+	//printf("verifying for %s\n",name);
 	int i;
 	char** a=(char**)malloc(2*20*sizeof('a'));
 	for(i=0;i<2;i++)
