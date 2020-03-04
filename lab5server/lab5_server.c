@@ -64,10 +64,11 @@ char* nametofile(char name[])
 
 }
 
-void getFileCreationTime(char *path,char lastmod[]) {
+static time_t getFileCreationTime(char *path,char lastmod[]) {
     struct stat attr;
     stat(path, &attr);
     strcpy(lastmod,ctime(&attr.st_mtime));
+    return attr.st_mtime;
     // /printf("Last modified time: %s",ctime(&attr.st_mtime) );
 }
 
@@ -147,15 +148,60 @@ int main(int argc, char const *argv[])
         {
             printf("%s\n","IndexGet Request");
             char t1[20],t2[20];
+            int t1i,t2i;
             valread=read(new_socket,t1,20);
             valread=read(new_socket,t2,20);
             printf("time between %s and %s\n",t1,t2);
-        }
-        else if(strcmp(n,"1")==0)
-        {
-            printf("%s\n","IndexGet Request");
+            sscanf(t1,"%d",&t1i);
+            sscanf(t2,"%d",&t2i);
+            int count=0;
+            DIR *d;
+            struct dirent *dir;
+            d = opendir(".");
+            if (d)
+            {
+                int filecount=countfiles(".");
+                printf("%d\n",filecount);
+                send(new_socket,&filecount,sizeof(int),0);
+                while ((dir = readdir(d)) != NULL)
+                {
+                    printf("\n%s", dir->d_name);
+                    if(count>1)
+                    {
+                        struct stat st; /*declare stat variable*/
+                        char size[20];
+                        int size1;
+                        char hash[34]="";
+                        char lastmod[50];
+
+                        
+
+                        time_t time1= getFileCreationTime(dir->d_name,lastmod);
+                        if((difftime(time1,t1)>=0)&&(difftime(time1,t2)<=0))
+                        {
+                            if(stat(dir->d_name,&st)==0)
+                            sprintf(size, "%ld", st.st_size); 
+                            else
+                                printf("no\n");
+                            sscanf(size,"%d",&size1);
+                            hashfn(nametofile(dir->d_name),hash,size1);
+                            printf("%s\n",size);
+                            printf("%s\n",hash);
+                            printf("last mod : %s\n",lastmod);
+                            send(new_socket,dir->d_name,20,0);
+                            send(new_socket,&size1,sizeof(size1),0);
+                            send(new_socket,hash,34,0);
+                            send(new_socket,lastmod,50,0);
+                        }
+
+                    }
+                    count++;
+                }
+                closedir(d);
+            }
 
         }
+        
         else if(strcmp(n,"2")==0)
         {
             printf("%s\n","IndexGet Request");
