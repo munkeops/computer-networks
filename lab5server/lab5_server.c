@@ -213,11 +213,11 @@ int main(int argc, char const *argv[])
             if (d)
             {
                 int filecount=countfiles(".");
-                printf("%d\n",filecount);
+                //printf("%d\n",filecount);
                 send(new_socket,&filecount,sizeof(int),0);
                 while ((dir = readdir(d)) != NULL)
                 {
-                    printf("\n%s", dir->d_name);
+                    //printf("\n%s", dir->d_name);
                     if(count>1)
                     {
                         struct stat st; /*declare stat variable*/
@@ -232,10 +232,10 @@ int main(int argc, char const *argv[])
                             printf("no\n");
                         sscanf(size,"%d",&size1);
                         hashfn(nametofile(dir->d_name),hash,size1);
-                        printf("%s\n",size);
-                        printf("%s\n",hash);
+                        //printf("%s\n",size);
+                        //printf("%s\n",hash);
                         getFileCreationTime(dir->d_name,lastmod);
-                        printf("last mod : %s\n",lastmod);
+                        //printf("last mod : %s\n",lastmod);
                         send(new_socket,dir->d_name,20,0);
                         send(new_socket,&size1,sizeof(size1),0);
                         send(new_socket,hash,34,0);

@@ -440,18 +440,16 @@ int main(int argc, char const *argv[])
 		perror("listen"); 
 		exit(EXIT_FAILURE); 
 	}
+    int count=-1;
 	while((new_socket = accept(server_fd, (struct sockaddr *)&address,(socklen_t*)&addrlen))>0) 
     {
-        if (new_socket<0) 
-        { 
-            perror("accept"); 
-            exit(EXIT_FAILURE); 
-        } 
+       
         //send(new_socket , "Menu\n1)" , strlen("Menu\n1)") , 0 );
         // child process because return value zero 
+        count++;
         if (fork() == 0) 
         {            
-            printf("Hello from Child!\n");
+            printf("Hello from Child! %d\n",count);
             recv_connect(new_socket,valread);
         }
 
@@ -461,8 +459,8 @@ int main(int argc, char const *argv[])
         {
             printf("Hello from Parent!\n"); 
             continue;
-        }
 
+        }
 
         
     }

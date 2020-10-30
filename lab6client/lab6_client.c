@@ -15,6 +15,9 @@
 
 Unique header code
 
+
+Client ID=
+
 IndexGet Short :1
 IndexGet Long :2
 IndexGet RegEx :3
@@ -23,6 +26,8 @@ FileHash Verify:4
 
 FileUpload :5
 FileDownload :6
+
+
 
 */
 
